@@ -13,7 +13,7 @@ export async function POST(request: Request) {
       },
       body: JSON.stringify({
         model: 'claude-3-opus-20240229',
-        max_tokens: 4096,
+        max_tokens: 1000,
         temperature: 0.7,
         messages: [{
           role: 'user',
