@@ -1,71 +1,65 @@
 'use client';
-import React, { useState, FormEvent } from 'react';
+import React, { useState, FormEvent, ChangeEvent } from 'react';
 import { Send } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
-const SYSTEM_PROMPT = `You are a dental assistant bot. You MUST:
-1. ONLY answer questions related to dentistry, dental procedures, and oral health
-2. If a question is not related to dentistry, respond: "Извините, я могу отвечать только на вопросы, связанные со стоматологией."
-3. Never engage in general conversation or other medical topics
-4. Always provide dental-specific information in Russian
-5. Always include a reminder that this is for information only and the patient should consult a dentist for specific medical advice
-6. Use emojis occasionally to make responses more engaging
-7. Be concise but informative
-8. Structure complex answers with bullet points for better readability`;
-
-interface Message {
+type MessageType = {
   type: 'user' | 'bot' | 'error';
   content: string;
-}
-
-const DentalChat: React.FC = () => {
-  const [messages, setMessages] = useState<Message[]>([{
-    type: 'bot',
-    content: 'Здравствуйте! 🦷 Я стоматологический ассистент. Задайте мне вопрос о стоматологии, и я постараюсь помочь. Помните, что мои ответы носят информационный характер и не заменяют консультацию врача.'
-  }]);
-  const [input, setInput] = useState<string>('');
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
-  e.preventDefault();
-  if (!input.trim()) return;
-
-  const userMessage = input.trim();
-  setMessages(prev => [...prev, { type: 'user', content: userMessage }]);
-  setInput('');
-  setIsLoading(true);
-
-  try {
-    const response = await fetch('/api/chat', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        message: userMessage,
-        systemPrompt: SYSTEM_PROMPT
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error('API request failed');
-    }
-
-    const data = await response.json();
-    setMessages(prev => [...prev, {
-      type: 'bot',
-      content: data.content[0].text
-    }]);
-  } catch (error) {
-    console.error('Error:', error);
-    setMessages(prev => [...prev, {
-      type: 'error',
-      content: 'Произошла ошибка при получении ответа. Пожалуйста, попробуйте позже.'
-    }]);
-  } finally {
-    setIsLoading(false);
-  }
 };
+
+const DentalChat = () => {
+  const [messages, setMessages] = useState<MessageType[]>([{
+    type: 'bot',
+    content: 'Здравствуйте! 🦷 Я стоматологический ассистент. Задайте мне вопрос о стоматологии, и я постараюсь помочь.'
+  }]);
+  const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setInput(e.target.value);
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!input.trim()) return;
+
+    const userMessage = input.trim();
+    setMessages(prev => [...prev, { type: 'user', content: userMessage }]);
+    setInput('');
+    setIsLoading(true);
+
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          message: userMessage,
+          systemPrompt: SYSTEM_PROMPT
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('API request failed');
+      }
+
+      const data = await response.json();
+      setMessages(prev => [...prev, {
+        type: 'bot',
+        content: data.content[0].text
+      }]);
+    } catch (error) {
+      console.error('Error:', error);
+      setMessages(prev => [...prev, {
+        type: 'error',
+        content: 'Произошла ошибка при получении ответа. Пожалуйста, попробуйте позже.'
+      }]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="flex flex-col h-screen max-w-2xl mx-auto p-4">
@@ -112,7 +106,7 @@ const DentalChat: React.FC = () => {
         <input
           type="text"
           value={input}
-          onChange={(e) => setInput(e.target.value)}
+          onChange={handleInputChange}
           placeholder="Введите ваш вопрос..."
           className="flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           disabled={isLoading}
