@@ -1,26 +1,29 @@
 'use client';
-import React, { useState, FormEvent, ChangeEvent } from 'react';
+import React, { useState } from 'react';
 import { Send } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
-type MessageType = {
-  type: 'user' | 'bot' | 'error';
-  content: string;
-};
+const SYSTEM_PROMPT = `You are a dental assistant bot. You MUST:
+1. ONLY answer questions related to dentistry, dental procedures, and oral health
+2. If a question is not related to dentistry, respond: "Извините, я могу отвечать только на вопросы, связанные со стоматологией."
+3. Never engage in general conversation or other medical topics
+4. Always provide dental-specific information in Russian
+5. Always include a reminder that this is for information only and the patient should consult a dentist for specific medical advice
+6. Use emojis occasionally to make responses more engaging
+7. Be concise but informative
+8. Structure complex answers with bullet points for better readability`;
 
 const DentalChat = () => {
-  const [messages, setMessages] = useState<MessageType[]>([{
-    type: 'bot',
-    content: 'Здравствуйте! 🦷 Я стоматологический ассистент. Задайте мне вопрос о стоматологии, и я постараюсь помочь.'
-  }]);
+  const [messages, setMessages] = useState([
+    {
+      type: 'bot',
+      content: 'Здравствуйте! 🦷 Я стоматологический ассистент. Задайте мне вопрос о стоматологии, и я постараюсь помочь. Помните, что мои ответы носят информационный характер и не заменяют консультацию врача.'
+    }
+  ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setInput(e.target.value);
-  };
-
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!input.trim()) return;
 
@@ -106,7 +109,7 @@ const DentalChat = () => {
         <input
           type="text"
           value={input}
-          onChange={handleInputChange}
+          onChange={(e) => setInput(e.target.value)}
           placeholder="Введите ваш вопрос..."
           className="flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           disabled={isLoading}
