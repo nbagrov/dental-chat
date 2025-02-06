@@ -26,46 +26,46 @@ const DentalChat: React.FC = () => {
   const [input, setInput] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!input.trim()) return;
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
+  e.preventDefault();
+  if (!input.trim()) return;
 
-    const userMessage = input.trim();
-    setMessages(prev => [...prev, { type: 'user', content: userMessage }]);
-    setInput('');
-    setIsLoading(true);
+  const userMessage = input.trim();
+  setMessages(prev => [...prev, { type: 'user', content: userMessage }]);
+  setInput('');
+  setIsLoading(true);
 
-    try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          message: userMessage,
-          systemPrompt: SYSTEM_PROMPT
-        })
-      });
+  try {
+    const response = await fetch('/api/chat', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message: userMessage,
+        systemPrompt: SYSTEM_PROMPT
+      })
+    });
 
-      if (!response.ok) {
-        throw new Error('API request failed');
-      }
-
-      const data = await response.json();
-      setMessages(prev => [...prev, {
-        type: 'bot',
-        content: data.content[0].text
-      }]);
-    } catch (error) {
-      console.error('Error:', error);
-      setMessages(prev => [...prev, {
-        type: 'error',
-        content: 'Произошла ошибка при получении ответа. Пожалуйста, попробуйте позже.'
-      }]);
-    } finally {
-      setIsLoading(false);
+    if (!response.ok) {
+      throw new Error('API request failed');
     }
-  };
+
+    const data = await response.json();
+    setMessages(prev => [...prev, {
+      type: 'bot',
+      content: data.content[0].text
+    }]);
+  } catch (error) {
+    console.error('Error:', error);
+    setMessages(prev => [...prev, {
+      type: 'error',
+      content: 'Произошла ошибка при получении ответа. Пожалуйста, попробуйте позже.'
+    }]);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   return (
     <div className="flex flex-col h-screen max-w-2xl mx-auto p-4">
